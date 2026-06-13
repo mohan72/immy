@@ -34,7 +34,7 @@ My initial attempts to write my own editor were focused on using a doubly-linked
 These were possible due to a single reflow function which read the whole string and created a table of starting and ending indices for each line. It takes very little memory and is quite fast as it just works on the in-memory buffer. I can run this anytime I wanted to, and all I had to know was which character held the cursor.
 
 
-There are two downsides to the approach: 1. The whole file is in a single std::string buffer. This is not suitable for memory-constrained systems. 2. Since I run the reflow and screen update functions liberally, there is a noticeable flicker of the screen when I type fast. This will have to be addressed sometime in the future.
+There are two downsides to the approach: 1. The whole file is in a single std::string buffer. This is not suitable for memory-constrained systems. 2. Since I run the reflow and screen update functions liberally, there is an occasional flicker of the screen when I type fast. This will have to be addressed sometime in the future.
 
 
 Result: My own tiny little text editor with word wrap and quite a few editing functions (move by word, by line, delete word etc.) within 500 lines of code. I am calling it 'immy' which is a 'flick', or a 'tiny amount' in Tamil.
