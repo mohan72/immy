@@ -4,11 +4,13 @@ Plain text editor with word wrap within 500 lines of code.
 
 # Compile and install
 
-use the 'Makefile' to compile and install:
+Requires a C++ compiler like gcc or clang. Use the 'Makefile' to compile and install:
 
-'make' compiles the source
+'make' to compiles the source
 
-'sudo make install' should install it in compatible UNIX-based systems
+'sudo make install' to install it in compatible UNIX-based systems
+
+'make fclean' to completely remove the compiled objects and executable
 
 # History
 
