@@ -27,7 +27,6 @@ int main(int argc, char* argv[]) {
     buffer* buf = new buffer(file_path);
 
     buf->display_all();
-    buf->message ("Implement About Popup.");
     buf->position_cursor();
     buf->process_commands();
 
