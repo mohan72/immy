@@ -155,7 +155,7 @@ void buffer::display_changes() {
     for (size_t i = 0; i <= BOTTOM; i++) {  //go through every screen line
         vl = topline + i;
         if (vl < lc) {
-            if (displaymask[vl] != hash(text.substr(vline[vl].start, vline[vl].length).c_str())) {    //check if line has to be updated
+            if (vl >= displaymask.size() || displaymask[vl] != hash(text.substr(vline[vl].start, vline[vl].length).c_str())) {    //check if line has to be updated
                 //update - draw clear line & display string
                 move(i, 0);
                 clrtoeol();
