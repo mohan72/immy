@@ -13,12 +13,12 @@ int main(int argc, char* argv[]) {
     }
 
     initscr();
-    keypad(stdscr, TRUE);   // Allow capturing special keys (like arrows, F1-F12)
+    curs_set(0);    // Hide the cursor
     set_escdelay(25);
     use_default_colors();
     raw();
     noecho();
-    curs_set(0);    // Hide the cursor
+    keypad(stdscr, TRUE);   // Allow capturing special keys (like arrows, F1-F12)
     start_color();
     init_pair(1, -1, -1);
     bkgd(COLOR_PAIR(1));

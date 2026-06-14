@@ -33,6 +33,23 @@ buffer::buffer (std::string fname) {
     idx_ = 0;
     dirty = false;
     message_to_display = "";
+    set_display_mask();
+}
+
+constexpr uint32_t buffer::hash(std::string_view str) {
+    uint32_t hash_ = 2166136261U; // FNV offset basis
+    for (char c : str) {
+        hash_ ^= static_cast<uint8_t>(c);
+        hash_ *= 16777619U;       // FNV prime
+    }
+    return hash_;
+}
+
+void buffer::set_display_mask() {
+    displaymask.clear();
+    for (size_t i = 0; i < line_count(); i++) {
+        displaymask.push_back({hash(text.substr(vline[i].start, vline[i].length).c_str())});
+    }
 }
 
 // Custom Word Wrap Tokenizer (Greedy Reflow Algorithm)
@@ -110,13 +127,6 @@ void buffer::reflow_text() {
     }
 }
 
-void buffer::display_line(size_t row, size_t line_no) {
-    if (line_no < line_count()) {
-        mvprintw(row, 0, "%s", text.substr(vline[line_no].start, vline[line_no].length).c_str());
-        refresh();
-    }
-}
-
 void buffer::display_all() {
     int y = 0;
     size_t cline = topline;
@@ -128,12 +138,36 @@ void buffer::display_all() {
             break;
         if (y > BOTTOM)
             break;
-        display_line(y, cline);
+        if (cline < line_count()) {
+            mvprintw(y, 0, "%s", text.substr(vline[cline].start, vline[cline].length).c_str());
+        }
         cline++;
         y++;
     }
     wattroff(stdscr, BUFFER_COLOR);
-    //refresh();
+    refresh();
+}
+
+void buffer::display_changes() {
+    size_t vl;  //visual line index for display
+    size_t lc = line_count();
+    wattron(stdscr, BUFFER_COLOR);
+    for (size_t i = 0; i <= BOTTOM; i++) {  //go through every screen line
+        vl = topline + i;
+        if (vl < lc) {
+            if (displaymask[vl] != hash(text.substr(vline[vl].start, vline[vl].length).c_str())) {    //check if line has to be updated
+                //update - draw clear line & display string
+                move(i, 0);
+                clrtoeol();
+                mvprintw(i, 0, "%s", text.substr(vline[vl].start, vline[vl].length).c_str());
+            }
+        } else {
+            move(i, 0);
+            clrtoeol();
+        }
+    }
+    wattroff(stdscr, BUFFER_COLOR);
+    set_display_mask();
 }
 
 size_t buffer::cursor_line(size_t idx) {
@@ -215,7 +249,7 @@ void buffer::position_cursor() {
     } else if (cursor_row(idx_) > BOTTOM) {
         topline += (cursor_row(idx_) - BOTTOM);
     }
-    display_all();
+    display_changes();
     update_status();
     move(cursor_row(idx_), cursor_col(idx_));
     refresh();
@@ -223,7 +257,7 @@ void buffer::position_cursor() {
 
 void buffer::message(std::string msg) {
     message_to_display = msg;
-}
+    }
 
 void buffer::update_status() {
     wattron(stdscr, A_DIM);
@@ -257,7 +291,7 @@ void buffer::process_commands() {
             case CTRL_Q:
                 if (dirty && !save_override) {
                     save_override = true;
-                    message("Unsaved changes. Exit again to override.");
+                    message_to_display = "Unsaved changes. Exit again to override.";
                     position_cursor();
                 } else {
                     done = true;
@@ -307,6 +341,7 @@ void buffer::process_commands() {
                 } else {
                     idx_ = text.length()-1;
                 }
+                //message_to_display = displaymask[cursor_line(idx_)].prev_hash;
                 position_cursor();
                 break;
             case KEY_UP:
@@ -363,7 +398,7 @@ void buffer::process_commands() {
                 position_cursor();
                 break;
             case CTRL_A:
-                message_to_display = "About!";
+                message("About!");
                 position_cursor();
                 break;
             case KEY_F(1):

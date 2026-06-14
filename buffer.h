@@ -17,16 +17,11 @@ struct line {
     size_t length;
 };
 
-struct dmask {
-    size_t start;
-    size_t length;
-    bool altered;
-};
-
 class buffer {
     std::string text;
     std::string filename;
     std::vector<line> vline;
+    std::vector<uint32_t> displaymask;
     std::string message_to_display;
 
     size_t topline;
@@ -41,8 +36,8 @@ class buffer {
         size_t line_count() { return vline.size()-1; }
         size_t char_count() { return text.length(); }
         void reflow_text();
-        void display_line(size_t row, size_t line_no);
         void display_all();
+        void display_changes();
         size_t cursor_line(size_t idx);
         size_t cursor_col(size_t idx);
         int cursor_row(size_t idx);
@@ -53,6 +48,8 @@ class buffer {
         void message(std::string msg);
         void process_commands();
         void save_buffer();
+        constexpr uint32_t hash(std::string_view str);
+        void set_display_mask();
 };
 
 #endif
