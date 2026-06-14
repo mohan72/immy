@@ -118,7 +118,7 @@ void buffer::display_line(size_t row, size_t line_no) {
 }
 
 void buffer::display_all() {
-    size_t y = 0;
+    int y = 0;
     size_t cline = topline;
     bkgd(COLOR_PAIR(BUFFER_COLOR));    // Clean BG
     clear();
