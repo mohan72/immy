@@ -265,12 +265,13 @@ void buffer::update_status() {
     clrtoeol();
     size_t l_no = cursor_line(idx_) + 1;    //Use common count
     size_t col = cursor_col(idx_) + 1;  //Use common count
-    std::string status_message = filename + (dirty ? "*" : "") + " | ";
-    status_message += "ROW:[" + std::to_string(l_no) + "] ";
-    status_message += "COL:[" + std::to_string(col) + "] ";
-    status_message += "CHAR:[" + std::to_string(static_cast<int>(text[idx_])) + "]";
+    std::string status_message = " " + filename + (dirty ? "*" : "") + " | ";
+    status_message += "R:[" + std::to_string(l_no) + "] ";
+    status_message += "C:[" + std::to_string(col) + "]";
+    //status_message += "CHAR:[" + std::to_string(static_cast<int>(text[idx_])) + "]";
+    status_message += " [F1 - Help]";
     if (message_to_display != "") {
-        status_message += " | MSG:[" + message_to_display + "]";
+        status_message += " MSG:[" + message_to_display + "]";
         message_to_display = "";
     }
     mvprintw(BOTTOM+1, 0, "%s", status_message.c_str());
@@ -291,7 +292,7 @@ void buffer::process_commands() {
             case CTRL_Q:
                 if (dirty && !save_override) {
                     save_override = true;
-                    message_to_display = "Unsaved changes. Exit again to override.";
+                    message_to_display = "Exit again to ignore changes.";
                     position_cursor();
                 } else {
                     done = true;
