@@ -1,6 +1,6 @@
 # immy
 
-Plain text editor with word wrap within 500 lines of code.
+Plain text editor with word wrap within 500 lines of code (490 LOC as of last count).
 
 # Compile and install
 
