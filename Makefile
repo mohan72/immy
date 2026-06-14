@@ -24,7 +24,7 @@ ifeq ($(UNAME_S), Darwin)
     LIBS = -lncurses
 else
     # Linux (Ubuntu/Xubuntu/Debian) Specific Configuration
-    LIBS = -lncurses -ltinfo
+    LIBS = -lncursesw -ltinfo
 endif
 
 # Source and Object files
