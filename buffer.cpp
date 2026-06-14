@@ -112,7 +112,7 @@ void buffer::reflow_text() {
 
 void buffer::display_line(size_t row, size_t line_no) {
     if (line_no < line_count()) {
-        mvprintw(row, 0, text.substr(vline[line_no].start, vline[line_no].length).c_str());
+        mvprintw(row, 0, "%s", text.substr(vline[line_no].start, vline[line_no].length).c_str());
         refresh();
     }
 }
@@ -141,7 +141,7 @@ size_t buffer::cursor_line(size_t idx) {
         return 0;
     if (vline.empty())
         return 0;
-    for (int line = 0; line < line_count(); line++) {
+    for (size_t line = 0; line < line_count(); line++) {
         if ((idx >= vline[line].start) && (idx < (vline[line].start + vline[line].length)))
             return line;
     }
@@ -153,7 +153,7 @@ size_t buffer::cursor_col(size_t idx) {
         return 0;
     if (vline.empty())
         return 0;
-    for (int line = 0; line < line_count(); line++) {
+    for (size_t line = 0; line < line_count(); line++) {
         if ((idx >= vline[line].start) && (idx < (vline[line].start + vline[line].length)))
             return idx - vline[line].start;
     }
@@ -239,7 +239,7 @@ void buffer::update_status() {
         status_message += " | MSG:[" + message_to_display + "]";
         message_to_display = "";
     }
-    mvprintw(BOTTOM+1, 0, status_message.c_str());
+    mvprintw(BOTTOM+1, 0, "%s", status_message.c_str());
     wattroff(stdscr, A_DIM);
 }
 
@@ -323,7 +323,9 @@ void buffer::process_commands() {
                     position_cursor();
                 }
                 break;
-            case BKSPACE:
+            case KEY_BACKSPACE:
+            case BKSPACE_A:
+            case BKSPACE_B:
                 if (idx_ > 0) {
                     idx_--;
                     text.erase(idx_, 1);
