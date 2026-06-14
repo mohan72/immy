@@ -362,6 +362,10 @@ void buffer::process_commands() {
                 dirty = false;
                 position_cursor();
                 break;
+            case KEY_F(1):
+                message("Help!");
+                position_cursor();
+                break();
             default:
                 if (command >= 32 && command <= 126) {
                     text.insert(idx_, 1, command);
