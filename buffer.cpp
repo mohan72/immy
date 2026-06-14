@@ -152,7 +152,7 @@ void buffer::display_changes() {
     size_t vl;  //visual line index for display
     size_t lc = line_count();
     wattron(stdscr, BUFFER_COLOR);
-    for (size_t i = 0; i <= BOTTOM; i++) {  //go through every screen line
+    for (int i = 0; i <= BOTTOM; i++) {  //go through every screen line
         vl = topline + i;
         if (vl < lc) {
             if (vl >= displaymask.size() || displaymask[vl] != hash(text.substr(vline[vl].start, vline[vl].length).c_str())) {    //check if line has to be updated
