@@ -1,6 +1,6 @@
 # immy
 
-Plain text editor with word wrap within 500 lines of code (490 LOC as of last count).
+Plain text editor with dynamic word-wrap within 500 lines of code (490 LOC as of last count).
 
 # Compile and install
 
@@ -14,29 +14,26 @@ Requires a C++ compiler like gcc or clang. Use the 'Makefile' to compile and ins
 
 # History
 
-I have been trying to write my own plain text editor for quite some time; many years in fact. My source code archive is littered with quite a few half-finished editors in C, C++, Java, and Python. In fact, one of the first things I do when I learn a language is to write a plain text editor for the CLI. I choose the CLI because it is one of the most challenging environments to work in programming if you want to target screen management. The standards are too many and the different operating systems expose different key commands. The challenge can be quite frustrating. The ncurses library works differently in capturing and reporting keys in different environments.
+I have been trying to write my own plain text editor for quite some time; many years, in fact. My source code archive is littered with quite a few half-finished editors in C, C++, Java, and Python. In fact, one of the first things I do when I learn a language is to write a plain text editor for the CLI. I choose the CLI because it is one of the most challenging environments to work if you want to target screen management. The standards are too many and different operating systems add their own quirk. The MacOS doesn't report the Backspace key as a special key. Linux requires the UNICODE -lncursesw lib to be used instead of the standard -lncurses lib, even if you do not plan to use wide characters. These challenge can be intimidating to navigate. The ncurses library also reports different keys in different environments.
 
 
-I have installed and studied, to an extent, many small editor projects available online. The 'kilo' text editor project is something I love because of the challenge it sets itself: to write a text editor in less than 1000 lines of code. It is an exemplary project that has inspired many forks and alternate takes.
+I have installed, tried and studied, to a certain extent, many small editor projects available online. I love the 'kilo' text editor project because of the constraint it sets itself: to write a usable plain text editor in less than 1000 lines of code. It is one of the inspirations for the 'immy' project.
 
 
-The main reason I wanted to write my own text editor was that you had to run through a few hoops to get word wrap in popular console text editors. Nano didn't even have word wrap until version 2+. All I wanted was an editor with proper word wrap at word+blank boundaries from the get go. This reason, of course, no longer exists - popular text editors have caught up; but I wanted to finish my project in any case.
+The main reason I wanted to write my own text editor was that I had to read through stack overflow to setup proper word-wrap in popular console text editors (nano and vim). Nano didn't even have word wrap until version 2+. All I wanted was an editor with proper word-wrap at word+blank boundaries from the get go.
 
 
-The biggest challenge in writing a text editor is managing the text buffer. There are whole books dedicated to the art of text buffer design. That is the scale of the problem. There are many elegant designs, and some clever ones too. It all boils down to the kind of constraints we are bound to: small memory, poor speed, and so on. I learned C++ programmming by reading 'Type and Learn C++' by Martin Rinehart. It is a wonderful book that works its way through developing a code editor (no word wrap). It uses a doubly-linked list for the text buffer as the objective is to teach pointers. Managing a doubly-linked list with a char* for each line of text is the epitome of risk in C programming. One move out of bound and your program is guaranteed to crash. The book also introduced me to the slick Borland <conio.h> console library for screen management. It was a non-standard library and is no longer available. Ncurses is cross-platform and has become the industry standard.
+The biggest challenge in writing a text editor is managing the text buffer. There are whole books dedicated to the art of text buffer design - such is the scale of the problem. There are many elegant designs; some more clever than the others. You have to be a pointers* champion to deal with most of the well-known solutions. It all boils down to the kind of constraint you are limited by: small memory, poor speed, limited features in the available compiler, and so on. I learned C++ programmming by reading 'Type and Learn C++' by Martin Rinehart. It is a wonderful book that works its way by developing a plain text editor (no word wrap). It uses a doubly-linked list for the text buffer. Managing a doubly-linked list with a char* for each line of text, I would say, is the epitome of risk in C programming. One move out of bound and your program segfaults. The book also introduced me to the slick <conio.h> console library from Borland, a non-standard library that is not available in modern compilers. Ncurses is cross-platform and is now the industry standard for console-based screen management.
 
 
-My initial attempts to write my own editor were focused on using a doubly-linked list and the ncurses library. I was successful to an extent and had a decent editor at hand. Managing dynamic word wrap was difficult and proving troublesome: I was finding it difficult to keep track of the cursor. I was also challenging myself to keep the linecount low to attempt to stay within a thousand lines of code. And then I hit two breakthroughs:
+My initial attempts to write a plain-text editor used a doubly-linked list and the ncurses library. I was successful to an extent and even had a decent editor at hand. Managing dynamic word-wrap was difficult and proved problematic: It was difficult to keep track of the cursor. I was also challenging myself to keep the linecount low in order to stay within 1000 lines of code. And then I hit two breakthroughs:
 
-1. I used a std::string object from the C++ standard library to manage the buffer as a single continuous stream of characters instead of a list of strings for each visible line. std::string can grow and shrink dynamically as the library takes care of malloc and delete itself. I never have to worry about pointers and segfaults were a thing of the past.
+1. I used a std::string object from the C++ standard library as the text buffer instead of a linked-list of char* for each visible line. std::string can grow and shrink dynamically, as the library takes care of malloc and delete. I never had to worry about pointers, and segfaults were a thing of the past.
 
-2. I used a global char index to track the cursor. With no more worry to track the line, the cursor just had to be adjusted by one character most of the times.
-
-
-These were possible due to a single reflow function which read the whole string and created a table of starting and ending indices for each line. It takes very little memory and is quite fast as it just works on the in-memory buffer. I can run this anytime I wanted to, and all I had to know was which character held the cursor.
+2. I used a global index to track the cursor as a specific character in the buffer. With no more necessity to track the specific line where the cursor was located, screen management became a breeze. This was possible due to the implementation of a single 'reflow' function that read the whole buffer string and created a vector of starting positions and length of each line. It takes a tiny amount of memory and is quite fast working through the in-memory buffer.
 
 
-There are two downsides to the approach: 1. The whole file is in a single std::string buffer. This is not suitable for memory-constrained systems. 2. Since I run the reflow and screen update functions liberally, there is an occasional flicker of the screen when I type fast. This will have to be addressed sometime in the future.
+There are two downsides to the approach: 1. The whole file is in a single std::string buffer. This is not suitable for memory-constrained systems. 2. Since I run the reflow and screen update functions liberally, there is an occasional flicker of the screen when I type fast. This has now been completely eradicated as the display routine only updates screen lines that have changed.
 
 
-Result: My own tiny little text editor with word wrap and quite a few editing functions (move by word, by line, delete word etc.) within 500 lines of code. I am calling it 'immy' which is a 'flick', or a 'tiny amount' in Tamil.
+Result: My own tiny little text editor with synamic word-wrap and a small set of useful editing features (move by word, by line, delete word etc.), all within 500 lines of code. I am calling it 'immy' which is a 'flick', or a 'tiny bit' in Tamil.
