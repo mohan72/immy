@@ -363,7 +363,7 @@ void buffer::process_commands() {
                 position_cursor();
                 break;
             case CTRL_A:
-                message("About!");
+                message_to_display = "About!";
                 position_cursor();
                 break;
             case KEY_F(1):
