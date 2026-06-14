@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <vector>
 
 #define BOTTOM (LINES-2)
 #define RIGHT (COLS-1)
