@@ -50,6 +50,7 @@ class buffer {
         void save_buffer();
         constexpr uint32_t hash(std::string_view str);
         void set_display_mask();
+        void display_help();
 };
 
 #endif

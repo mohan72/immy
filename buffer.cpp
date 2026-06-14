@@ -397,12 +397,8 @@ void buffer::process_commands() {
                 dirty = false;
                 position_cursor();
                 break;
-            case CTRL_A:
-                message("About!");
-                position_cursor();
-                break;
             case KEY_F(1):
-                message_to_display = "Help!";
+                display_help();
                 position_cursor();
                 break;
             default:
@@ -416,4 +412,22 @@ void buffer::process_commands() {
                 break;
         }
     }
+}
+
+void buffer::display_help() {
+    WINDOW *popup = newwin(9, 44, (LINES - 9) / 2, (COLS - 44) / 2);
+    box(popup, 0, 0); // Draw a border around the window
+
+    mvwprintw(popup, 1, 2, "       immy - plain text editor");
+    mvwprintw(popup, 3, 2, "CTRL+q - Quit     | SHIFT+LT - Prev Word");
+    mvwprintw(popup, 4, 2, "CTRL+s - Save     | SHIFT+RT - Next Word");
+    mvwprintw(popup, 5, 2, "CTRL+w - Delete Word to the Right");
+    mvwprintw(popup, 7, 2, "            Press any key to continue...");
+
+    wrefresh(popup);
+    wgetch(popup); // Wait for user to press any key
+    werase(popup);      // Clear the popup window content
+    wrefresh(popup);    // Force removal from the terminal display
+    delwin(popup);      // Deallocate the popup window memory
+    touchwin(stdscr);   // Mark the main screen as changed so ncurses redraws it entirely
 }
