@@ -48,9 +48,8 @@ constexpr uint32_t buffer::hash(std::string_view str) {
 void buffer::set_display_mask() {
     mask_topline = topline;
     displaymask.clear();
-    for (size_t i = 0; i < line_count(); i++) {
+    for (size_t i = 0; i < line_count(); i++)
         displaymask.push_back({hash(text.substr(vline[i].start, vline[i].length).c_str())});
-    }
 }
 
 // Custom Word Wrap Tokenizer (Greedy Reflow Algorithm)
@@ -139,9 +138,8 @@ void buffer::display_all() {
             break;
         if (y > BOTTOM)
             break;
-        if (cline < line_count()) {
+        if (cline < line_count())
             mvprintw(y, 0, "%s", text.substr(vline[cline].start, vline[cline].length).c_str());
-        }
         cline++;
         y++;
     }
@@ -200,10 +198,6 @@ size_t buffer::cursor_col(size_t idx) {
     return 0;
 }
 
-int buffer::cursor_row(size_t idx) {
-    return cursor_line(idx) - topline;
-}
-
 void buffer::save_buffer() {
     std::ofstream output_file(filename);
     if (output_file.is_open()) {
@@ -260,10 +254,6 @@ void buffer::position_cursor() {
     move(cursor_row(idx_), cursor_col(idx_));
     refresh();
 }
-
-void buffer::message(std::string msg) {
-    message_to_display = msg;
-    }
 
 void buffer::update_status() {
     wattron(stdscr, A_DIM);
@@ -430,8 +420,8 @@ void buffer::display_help() {
     mvwprintw(popup, 4, 2, "CTRL+s - Save     | SHIFT+RT - Next Word");
     mvwprintw(popup, 5, 2, "CTRL+w - Delete Word to the Right");
     mvwprintw(popup, 7, 2, "            Press any key to continue...");
-
     wrefresh(popup);
+
     wgetch(popup); // Wait for user to press any key
     werase(popup);      // Clear the popup window content
     wrefresh(popup);    // Force removal from the terminal display

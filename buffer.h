@@ -41,12 +41,12 @@ class buffer {
         void display_changes();
         size_t cursor_line(size_t idx);
         size_t cursor_col(size_t idx);
-        int cursor_row(size_t idx);
+        int cursor_row(size_t idx) { return cursor_line(idx) - topline; };
         size_t find_word_end(size_t idx);
         size_t find_prev_word(size_t idx);
         void position_cursor();
         void update_status();
-        void message(std::string msg);
+        void message(std::string msg) { message_to_display = msg; };
         void process_commands();
         void save_buffer();
         constexpr uint32_t hash(std::string_view str);
