@@ -25,6 +25,7 @@ class buffer {
     std::string message_to_display;
 
     size_t topline;
+    size_t mask_topline;
     size_t idx_;
     bool dirty;
 
@@ -34,7 +35,7 @@ class buffer {
         std::string get_text() { return text; }
         std::vector<line> get_vline() { return vline; }
         size_t line_count() { return vline.size()-1; }
-        size_t char_count() { return text.length(); }
+        //size_t char_count() { return text.length(); }
         void reflow_text();
         void display_all();
         void display_changes();

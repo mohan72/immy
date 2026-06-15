@@ -46,6 +46,7 @@ constexpr uint32_t buffer::hash(std::string_view str) {
 }
 
 void buffer::set_display_mask() {
+    mask_topline = topline;
     displaymask.clear();
     for (size_t i = 0; i < line_count(); i++) {
         displaymask.push_back({hash(text.substr(vline[i].start, vline[i].length).c_str())});
@@ -149,6 +150,11 @@ void buffer::display_all() {
 }
 
 void buffer::display_changes() {
+    if (mask_topline != topline) {
+        display_all();
+        set_display_mask();
+        return;
+    }
     size_t vl;  //visual line index for display
     size_t lc = line_count();
     wattron(stdscr, BUFFER_COLOR);
@@ -171,7 +177,7 @@ void buffer::display_changes() {
 }
 
 size_t buffer::cursor_line(size_t idx) {
-    if (idx >= char_count())
+    if (idx >= text.length())
         return 0;
     if (vline.empty())
         return 0;
@@ -183,7 +189,7 @@ size_t buffer::cursor_line(size_t idx) {
 }
 
 size_t buffer::cursor_col(size_t idx) {
-    if (idx >= char_count())
+    if (idx >= text.length())
         return 0;
     if (vline.empty())
         return 0;
@@ -265,14 +271,14 @@ void buffer::update_status() {
     clrtoeol();
     size_t l_no = cursor_line(idx_) + 1;    //Use common count
     size_t col = cursor_col(idx_) + 1;  //Use common count
-    std::string status_message = " " + filename + (dirty ? "*" : "") + " | ";
-    status_message += "R:[" + std::to_string(l_no) + "] ";
-    status_message += "C:[" + std::to_string(col) + "]";
-    //status_message += "CHAR:[" + std::to_string(static_cast<int>(text[idx_])) + "]";
-    status_message += " [F1 - Help]";
+    std::string status_message = " R:[" + std::to_string(l_no) + "] C:[" + std::to_string(col) + "] ";
+    //status_message += "CHAR:[" + std::to_string(static_cast<int>(text[idx_])) + "] ";
+    status_message += "CHARS:[" + std::to_string(text.length()) + "] [F1 - Help] ";
     if (message_to_display != "") {
-        status_message += " MSG:[" + message_to_display + "]";
+        status_message += "MSG:[" + message_to_display + "]";
         message_to_display = "";
+    } else {
+        status_message += "[" + (filename + (dirty ? "*" : "")) + "]";
     }
     mvprintw(BOTTOM+1, 0, "%s", status_message.c_str());
     wattroff(stdscr, A_DIM);
@@ -299,7 +305,7 @@ void buffer::process_commands() {
                 }
                 break;
             case KEY_RIGHT:
-                if (idx_ < (char_count() - 1)) {  //there is space to move right
+                if (idx_ < (text.length() - 1)) {  //there is space to move right
                     idx_++;
                     position_cursor();
                 }
