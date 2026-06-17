@@ -14,13 +14,13 @@
 buffer::buffer (std::string fname) {
     filename = fname;
     std::ifstream file_stream(filename);
-    if (!file_stream.is_open()) {
-        text = "\n";
-    } else {
+    if (file_stream) {
         std::stringstream buffer;
-        buffer << file_stream.rdbuf();
-        text = buffer.str();
+        text = (buffer << file_stream.rdbuf(), buffer.str());
+    } else {
+        text = "\n";
     }
+
     //Change Tabs to spaces if not already
     const std::string spaces(TAB_WIDTH, ' ');
     size_t pos = 0;
@@ -32,7 +32,6 @@ buffer::buffer (std::string fname) {
     topline = 0;
     idx_ = 0;
     dirty = false;
-    message_to_display = "";
     set_display_mask();
 }
 
@@ -48,8 +47,7 @@ constexpr uint32_t buffer::hash(std::string_view str) {
 void buffer::set_display_mask() {
     mask_topline = topline;
     displaymask.clear();
-    for (size_t i = 0; i < line_count(); i++)
-        displaymask.push_back({hash(text.substr(vline[i].start, vline[i].length).c_str())});
+    for (size_t i = 0; i < line_count(); i++) { displaymask.push_back({hash(text.substr(vline[i].start, vline[i].length).c_str())}); }
 }
 
 // Custom Word Wrap Tokenizer (Greedy Reflow Algorithm)
@@ -69,15 +67,9 @@ void buffer::reflow_text() {
     while (idx < total_len) {
         size_t token_start = idx;
 
-        while (idx < total_len && text[idx] != ' ' && text[idx] != '\n') {
-            idx++;
-        }
-        while (idx < total_len && text[idx] == ' ') {
-            idx++;
-        }
-        if (idx < total_len && text[idx] == '\n') {
-            idx++;
-        }
+        while (idx < total_len && text[idx] != ' ' && text[idx] != '\n') { idx++; }
+        while (idx < total_len && text[idx] == ' ') { idx++; }
+        if (idx < total_len && text[idx] == '\n') { idx++; }
 
         size_t token_len = idx - token_start;
 
@@ -113,9 +105,7 @@ void buffer::reflow_text() {
         }
     }
 
-    if (current_row_len > 0 || current_row_start == total_len) {
-        vline.push_back({current_row_start, current_row_len});
-    }
+    if (current_row_len > 0 || current_row_start == total_len) { vline.push_back({current_row_start, current_row_len}); }
 
     if (!vline.empty()) {
         const auto& last_row = vline.back();
@@ -134,12 +124,9 @@ void buffer::display_all() {
     clear();
     wattron(stdscr, BUFFER_COLOR);
     while(true) {
-        if (cline >= line_count())
-            break;
-        if (y > BOTTOM)
-            break;
-        if (cline < line_count())
-            mvprintw(y, 0, "%s", text.substr(vline[cline].start, vline[cline].length).c_str());
+        if (cline >= line_count()) { break; }
+        if (y > BOTTOM) { break; }
+        if (cline < line_count()) { mvprintw(y, 0, "%s", text.substr(vline[cline].start, vline[cline].length).c_str()); }
         cline++;
         y++;
     }
@@ -175,34 +162,26 @@ void buffer::display_changes() {
 }
 
 size_t buffer::cursor_line(size_t idx) {
-    if (idx >= text.length())
-        return 0;
-    if (vline.empty())
-        return 0;
+    if (idx >= text.length() || vline.empty()) { return 0; }
+
     for (size_t line = 0; line < line_count(); line++) {
-        if ((idx >= vline[line].start) && (idx < (vline[line].start + vline[line].length)))
-            return line;
+        if ((idx >= vline[line].start) && (idx < (vline[line].start + vline[line].length))) { return line; }
     }
     return 0;
 }
 
 size_t buffer::cursor_col(size_t idx) {
-    if (idx >= text.length())
-        return 0;
-    if (vline.empty())
-        return 0;
+    if (idx >= text.length() || vline.empty()) { return 0; }
+
     for (size_t line = 0; line < line_count(); line++) {
-        if ((idx >= vline[line].start) && (idx < (vline[line].start + vline[line].length)))
-            return idx - vline[line].start;
+        if ((idx >= vline[line].start) && (idx < (vline[line].start + vline[line].length))) { return idx - vline[line].start; }
     }
     return 0;
 }
 
 void buffer::save_buffer() {
-    std::ofstream output_file(filename);
-    if (output_file.is_open()) {
-        output_file << text;
-        output_file.close();
+    if (std::ofstream out{filename}) {
+        out << text;
     } else {
         std::cerr << "Error: Unable to open file for writing." << std::endl;
         exit(1);
@@ -212,12 +191,8 @@ void buffer::save_buffer() {
 size_t buffer::find_word_end(size_t idx) {
     size_t cpos = idx;
     while (true) {
-        while (text[cpos] != ' ' && text[cpos] != '\n') {
-            cpos++;
-        }
-        while (text[cpos] == ' ') {
-            cpos++;
-        }
+        while (text[cpos] != ' ' && text[cpos] != '\n') { cpos++; }
+        while (text[cpos] == ' ') { cpos++; }
         break;
     }
     return cpos;
@@ -225,19 +200,11 @@ size_t buffer::find_word_end(size_t idx) {
 
 size_t buffer::find_prev_word(size_t idx) {
     size_t cpos = idx;
-    if (cpos > 0 && text[cpos-1] == ' ') {
-        cpos--;
-    }
+    if (cpos > 0 && text[cpos-1] == ' ') { cpos--; }
     while (true) {
-        while (cpos > 0 && text[cpos] == ' ') {
-            cpos--;
-        }
-        while (cpos > 0 && text[cpos] != ' ' && text[cpos] != '\n') {
-            cpos--;
-        }
-        if (text[cpos] == ' ' || text[cpos] == '\n') {
-            cpos++;
-        }
+        while (cpos > 0 && text[cpos] == ' ') { cpos--; }
+        while (cpos > 0 && text[cpos] != ' ' && text[cpos] != '\n') { cpos--; }
+        if (text[cpos] == ' ' || text[cpos] == '\n') { cpos++; }
         break;
     }
     return cpos;
@@ -282,8 +249,7 @@ void buffer::process_commands() {
 
     while (!done) {
         command = getch();
-        if (save_override && command != CTRL_Q)
-            save_override = false;
+        if (save_override && command != CTRL_Q) { save_override = false; }
         switch (command) {
             case CTRL_Q:
                 if (dirty && !save_override) {
@@ -295,10 +261,8 @@ void buffer::process_commands() {
                 }
                 break;
             case KEY_RIGHT:
-                if (idx_ < (text.length() - 1)) {  //there is space to move right
-                    idx_++;
-                    position_cursor();
-                }
+                idx_ = std::min(idx_+1, text.length()-1);
+                position_cursor();
                 break;
             case KEY_SRIGHT:
                 if (text[idx_] == '\n' && idx_ < text.length()-1) { //Move cursor just once if sitting on a Newline
@@ -309,10 +273,8 @@ void buffer::process_commands() {
                 position_cursor();  //Required in case scroll happened
                 break;
             case KEY_LEFT:
-                if (idx_ > 0) {
-                    idx_--;
-                    position_cursor();
-                }
+                if (idx_ > 0) { idx_--; }
+                position_cursor();
                 break;
             case KEY_SLEFT:
                 if (text[idx_] == '\n' && idx_ > 0) {
@@ -338,7 +300,6 @@ void buffer::process_commands() {
                 } else {
                     idx_ = text.length()-1;
                 }
-                //message_to_display = displaymask[cursor_line(idx_)].prev_hash;
                 position_cursor();
                 break;
             case KEY_UP:
@@ -380,6 +341,16 @@ void buffer::process_commands() {
                 position_cursor();
                 break;
             }
+            case CTRL_K: {
+                size_t cl = cursor_line(idx_);
+                text.erase(vline[cl].start, vline[cl].length - 1);
+                idx_ = vline[cl].start;
+                if (cl < line_count()-1) { text.erase(idx_, 1); }
+                dirty = true;
+                reflow_text();
+                position_cursor();
+                break;
+            }
             case TAB: {
                 const std::string spaces(TAB_WIDTH, ' ');
                 text.insert(idx_, spaces);
@@ -416,9 +387,9 @@ void buffer::display_help() {
     box(popup, 0, 0); // Draw a border around the window
 
     mvwprintw(popup, 1, 2, "       immy - plain text editor");
-    mvwprintw(popup, 3, 2, "CTRL+q - Quit     | SHIFT+LT - Prev Word");
-    mvwprintw(popup, 4, 2, "CTRL+s - Save     | SHIFT+RT - Next Word");
-    mvwprintw(popup, 5, 2, "CTRL+w - Delete Word to the Right");
+    mvwprintw(popup, 3, 2, "CTRL+Q - Quit     | SHIFT+LT - Prev Word");
+    mvwprintw(popup, 4, 2, "CTRL+S - Save     | SHIFT+RT - Next Word");
+    mvwprintw(popup, 5, 2, "CTRL+W - Del Word | CTRL+K   - Del Line");
     mvwprintw(popup, 7, 2, "            Press any key to continue...");
     wrefresh(popup);
 

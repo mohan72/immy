@@ -9,5 +9,6 @@
 #define CTRL_Q  17
 #define CTRL_S  19
 #define CTRL_W  23
+#define CTRL_K  11
 
 #endif
