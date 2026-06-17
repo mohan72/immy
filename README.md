@@ -1,6 +1,6 @@
 # immy
 
-Plain text editor with dynamic word-wrap within 500 lines of code (490 LOC as of last count).
+Plain text editor with dynamic word-wrap within 500 lines of code (459 LOC as of last count).
 
 # Compile and install
 
