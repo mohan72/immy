@@ -17,6 +17,7 @@ buffer::buffer (std::string fname) {
     if (file_stream) {
         std::stringstream buffer;
         text = (buffer << file_stream.rdbuf(), buffer.str());
+        if (text.empty() || text.back() != '\n') { text.push_back('\n'); }
     } else {
         text = "\n";
     }
