@@ -27,6 +27,7 @@ class buffer {
     size_t topline;
     size_t mask_topline;
     size_t idx_;
+    size_t lastcol;
     bool dirty;
 
     public:

@@ -31,6 +31,7 @@ buffer::buffer (std::string fname) {
     reflow_text();
     topline = 0;
     idx_ = 0;
+    lastcol = 0;
     dirty = false;
     set_display_mask();
 }
@@ -229,7 +230,7 @@ void buffer::update_status() {
     size_t l_no = cursor_line(idx_) + 1;    //Use common count
     size_t col = cursor_col(idx_) + 1;  //Use common count
     std::string status_message = " R:[" + std::to_string(l_no) + "] C:[" + std::to_string(col) + "] ";
-    //status_message += "CHAR:[" + std::to_string(static_cast<int>(text[idx_])) + "] ";
+    status_message += "CHAR:[" + std::to_string(static_cast<int>(text[idx_])) + "] ";
     status_message += "CHARS:[" + std::to_string(text.length()) + "] [F1 - Help] ";
     if (message_to_display != "") {
         status_message += "MSG:[" + message_to_display + "]";
@@ -263,6 +264,7 @@ void buffer::process_commands() {
             case KEY_RIGHT:
                 idx_ = std::min(idx_+1, text.length()-1);
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
             case KEY_SRIGHT:
                 if (text[idx_] == '\n' && idx_ < text.length()-1) { //Move cursor just once if sitting on a Newline
@@ -271,10 +273,12 @@ void buffer::process_commands() {
                     idx_ = find_word_end(idx_);
                 }
                 position_cursor();  //Required in case scroll happened
+                lastcol = cursor_col(idx_);
                 break;
             case KEY_LEFT:
                 if (idx_ > 0) { idx_--; }
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
             case KEY_SLEFT:
                 if (text[idx_] == '\n' && idx_ > 0) {
@@ -285,26 +289,34 @@ void buffer::process_commands() {
                     idx_ = find_prev_word(idx_);
                 }
                 position_cursor();  //Required in case scroll happened
+                lastcol = cursor_col(idx_);
                 break;
             case KEY_HOME:
                 idx_ -= cursor_col(idx_);
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
             case KEY_END:
                 idx_ += (vline[cursor_line(idx_)].length-1 - cursor_col(idx_));
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
-            case KEY_DOWN:
+            case KEY_DOWN: {
                 if (cursor_line(idx_) < (line_count()-1)) {
                     idx_ = vline[cursor_line(idx_)+1].start;
                 } else {
                     idx_ = text.length()-1;
                 }
                 position_cursor();
+                idx_ = std::min(idx_ + lastcol, idx_ + (vline[cursor_line(idx_)].length-1 - cursor_col(idx_)));
+                position_cursor();
                 break;
+            }
             case KEY_UP:
                 if (cursor_line(idx_) > 0) {
                     idx_ = vline[cursor_line(idx_)-1].start;
+                    position_cursor();
+                    idx_ = std::min(idx_ + lastcol, idx_ + (vline[cursor_line(idx_)].length-1 - cursor_col(idx_)));
                     position_cursor();
                 }
                 break;
@@ -314,6 +326,7 @@ void buffer::process_commands() {
                     dirty = true;
                     reflow_text();
                     position_cursor();
+                    lastcol = cursor_col(idx_);
                 }
                 break;
             case KEY_BACKSPACE:
@@ -325,6 +338,7 @@ void buffer::process_commands() {
                     dirty = true;
                     reflow_text();
                     position_cursor();
+                    lastcol = cursor_col(idx_);
                 }
                 break;
             case ENTER:
@@ -333,12 +347,14 @@ void buffer::process_commands() {
                 dirty = true;
                 reflow_text();
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
             case CTRL_W: {   //Delete to end of word
                 text.erase(idx_, (find_word_end(idx_) - idx_));
                 dirty = true;
                 reflow_text();
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
             }
             case CTRL_K: {
@@ -349,6 +365,7 @@ void buffer::process_commands() {
                 dirty = true;
                 reflow_text();
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
             }
             case TAB: {
@@ -358,6 +375,7 @@ void buffer::process_commands() {
                 idx_ += TAB_WIDTH;
                 reflow_text();
                 position_cursor();
+                lastcol = cursor_col(idx_);
                 break;
             }
             case CTRL_S:
@@ -376,6 +394,7 @@ void buffer::process_commands() {
                     idx_++;
                     reflow_text();
                     position_cursor();
+                    lastcol = cursor_col(idx_);
                 }
                 break;
         }
