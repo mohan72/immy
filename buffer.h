@@ -24,11 +24,11 @@ class buffer {
     std::vector<uint32_t> displaymask;
     std::string message_to_display;
 
-    size_t topline;
-    size_t mask_topline;
-    size_t idx_;
-    size_t lastcol;
-    bool dirty;
+    size_t topline = 0;
+    size_t mask_topline = 0;
+    size_t idx_ = 0;
+    size_t lastcol = 0;
+    bool dirty = false;
 
     public:
         buffer(std::string fname);
@@ -36,7 +36,6 @@ class buffer {
         std::string get_text() { return text; }
         std::vector<line> get_vline() { return vline; }
         size_t line_count() { return vline.size()-1; }
-        //size_t char_count() { return text.length(); }
         void reflow_text();
         void display_all();
         void display_changes();

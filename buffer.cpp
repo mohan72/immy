@@ -17,9 +17,13 @@ buffer::buffer (std::string fname) {
     if (file_stream) {
         std::stringstream buffer;
         text = (buffer << file_stream.rdbuf(), buffer.str());
-        if (text.empty() || text.back() != '\n') { text.push_back('\n'); }
+        if (text.empty() || text.back() != '\n') {
+            text.push_back('\n');
+            dirty = true;
+        }
     } else {
         text = "\n";
+        dirty = true;
     }
 
     //Change Tabs to spaces if not already
@@ -30,10 +34,6 @@ buffer::buffer (std::string fname) {
         pos += spaces.length();
     }
     reflow_text();
-    topline = 0;
-    idx_ = 0;
-    lastcol = 0;
-    dirty = false;
     set_display_mask();
 }
 
