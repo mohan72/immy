@@ -406,7 +406,7 @@ void buffer::display_help() {
     WINDOW *popup = newwin(9, 44, (LINES - 9) / 2, (COLS - 44) / 2);
     box(popup, 0, 0); // Draw a border around the window
 
-    mvwprintw(popup, 1, 2, "       immy - plain text editor");
+    mvwprintw(popup, 1, 2, "             immy v0.95");
     mvwprintw(popup, 3, 2, "CTRL+Q - Quit     | SHIFT+LT - Prev Word");
     mvwprintw(popup, 4, 2, "CTRL+S - Save     | SHIFT+RT - Next Word");
     mvwprintw(popup, 5, 2, "CTRL+W - Del Word | CTRL+K   - Del Line");
